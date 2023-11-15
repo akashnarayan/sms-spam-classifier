@@ -56,9 +56,9 @@ if st.button('RESULT'):
     vector_input = tfidf.transform([transformed_sms])
     
     # Check if the model is fitted before making predictions
-    if hasattr(model, 'RESULT'):
+    if hasattr(model, 'predict'):
         # Predict
-        result = model.RESULT(vector_input)[0]
+        result = model.predict(vector_input)[0]
         
         # Display prediction
         st.subheader('Prediction')
