@@ -37,20 +37,34 @@ def transform_text(text):
 tfidf = pickle.load(open('vectorizer.pkl','rb'))
 model = pickle.load(open('model.pkl','rb'))
 
-st.title("Email/SMS Spam Classifier")
+# Set background color
+st.markdown("<style>body {background-color:pink}</style>", unsafe_allow_html=True)
 
-input_sms = st.text_area("Enter the message")
+# Header and instructions
+st.header('SMS Spam Classifier')
+st.write('Enter an SMS message below to check if it is spam:')
 
-if st.button('Predict'):
+# Text area for input
+input_sms = st.text_area('SMS')
 
-    # 1. preprocess
+# Predict button
+if st.button('RESULT'):
+    # Preprocess
     transformed_sms = transform_text(input_sms)
-    # 2. vectorize
+
+    # Vectorize
     vector_input = tfidf.transform([transformed_sms])
-    # 3. predict
-    result = model.predict(vector_input)[0]
-    # 4. Display
-    if result == 1:
-        st.header("Spam")
+    
+    # Check if the model is fitted before making predictions
+    if hasattr(model, 'RESULT'):
+        # Predict
+        result = model.RESULT(vector_input)[0]
+        
+        # Display prediction
+        st.subheader('Prediction')
+        if result == 1:
+            st.success('Spam')
+        else:
+            st.warning('Not spam')
     else:
-        st.header("Not Spam")
+        st.error('Model is not fitted yet. Please fit the model before making predictions.')
