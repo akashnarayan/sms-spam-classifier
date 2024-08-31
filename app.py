@@ -5,60 +5,50 @@ from nltk.corpus import stopwords
 import nltk
 from nltk.stem.porter import PorterStemmer
 
-nltk.download('punkt')
-nltk.download('stopwords')
 ps = PorterStemmer()
 
+
 def transform_text(text):
-  # ... your text preprocessing code ...
+    text = text.lower()
+    text = nltk.word_tokenize(text)
 
-# Load the fitted vectorizer and model
-with open('vectorizer.pkl', 'rb') as f:
-  tfidf = pickle.load(f)
+    y = []
+    for i in text:
+        if i.isalnum():
+            y.append(i)
 
-with open('model.pkl', 'rb') as f:
-  model = pickle.load(f)
+    text = y[:]
+    y.clear()
 
-# Set background color
-st.markdown("<style>body {background-color:pink}</style>", unsafe_allow_html=True)
+    for i in text:
+        if i not in stopwords.words('english') and i not in string.punctuation:
+            y.append(i)
 
-# Header and instructions
-st.header('SMS Spam Classifier')
-st.write('Enter an SMS message below to check if it is spam:')
+    text = y[:]
+    y.clear()
 
-# Text area for input
-input_sms = st.text_area('SMS')
+    for i in text:
+        y.append(ps.stem(i))
 
-# Predict button
-if st.button('RESULT'):
-  if input_sms:
-    # Preprocess
+    return " ".join(y)
+
+tfidf = pickle.load(open('vectorizer.pkl','rb'))
+model = pickle.load(open('model.pkl','rb'))
+
+st.title("Email/SMS Spam Classifier")
+
+input_sms = st.text_area("Enter the message")
+
+if st.button('Predict'):
+
+    # 1. preprocess
     transformed_sms = transform_text(input_sms)
-
-    if transformed_sms:
-      # Option A (Assuming similar data)
-      # vector_input = tfidf.transform([transformed_sms])
-
-      # Option B (If unsure about data similarity)
-      vector_input = tfidf.transform([transformed_sms])
-
-      # Check if the model is fitted before making predictions
-      if hasattr(model, 'predict'):
-        # Ensure the model is a classification model
-        if not hasattr(model, 'classes_'):
-          st.error("The loaded model seems not to be a classification model. Please ensure you're loading the correct model.")
-          return
-
-        # Predict
-        result = model.predict(vector_input)[0]
-        
-        # Display prediction
-        st.subheader('Prediction')
-        if result == 1:
-          st.success('Spam')
-        else:
-          st.warning('Not spam')
-      else:
-        st.error('Model is not fitted yet. Please fit the model before making predictions.')
-  else:
-    st.warning('Please enter an SMS message.')
+    # 2. vectorize
+    vector_input = tfidf.transform([transformed_sms])
+    # 3. predict
+    result = model.predict(vector_input)[0]
+    # 4. Display
+    if result == 1:
+        st.header("Spam")
+    else:
+        st.header("Not Spam")
